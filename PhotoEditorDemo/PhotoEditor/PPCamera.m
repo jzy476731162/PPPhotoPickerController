@@ -13,7 +13,7 @@
 #import "PhotoPickerConfig.h"
 
 
-#define SYSTEM_VERSION_LESS_THAN(v)                 ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedAscending)
+
 
 @interface Camera () <AVCapturePhotoCaptureDelegate>
 @property (weak, nonatomic) IBOutlet UIView *outputView;
@@ -68,16 +68,6 @@
     
 }
 
-- (void)appBecomeActive {
-    [self checkCameraIsUse];
-}
-
-- (void)appIntoBackground {
-    if (self.session && [self.session isRunning]) {
-        [self.session stopRunning];
-    }
-}
-
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
@@ -103,12 +93,24 @@
     
 }
 
+#pragma mark - Observer
+- (void)appBecomeActive {
+    [self checkCameraIsUse];
+}
+
+- (void)appIntoBackground {
+    if (self.session && [self.session isRunning]) {
+        [self.session stopRunning];
+    }
+}
+
 #pragma mark - Action
 - (IBAction)closeAction:(UIButton *)sender {
     [self hideLayerWithCompletion:^{
         [self.parentViewController.navigationController dismissViewControllerAnimated:YES completion:nil];
     }];
 }
+
 
 - (IBAction)swapCamera:(UIButton *)sender {
     if (self.session.inputs.count) {
@@ -122,7 +124,6 @@
             [sender.layer addAnimation:rotate forKey:@"swapAnimation"];
         });
         [self swapFrontAndBackCameras];
-
     }
     
 }
@@ -139,10 +140,10 @@
         
         [sender setEnabled:NO];
         
-        if (SYSTEM_VERSION_LESS_THAN(@"10")) {
-            [self capturePhotoLoweriOSTen];
-        }else {
+        if (@available(iOS 10.0, *)) {
             [(AVCapturePhotoOutput *)self.output capturePhotoWithSettings:[AVCapturePhotoSettings photoSettings] delegate:self];
+        } else {
+            [self capturePhotoLoweriOSTen];
         }
     }
 }
@@ -281,38 +282,27 @@
     
     self.session = session;
     
-    
-    if (SYSTEM_VERSION_LESS_THAN(@"10")) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Weverything"
+    if (@available(iOS 10.0, *)) {
+        AVCapturePhotoOutput *output = [[AVCapturePhotoOutput alloc] init];
+        self.output = output;
+        [session addOutput:output];
+    } else {
         AVCaptureStillImageOutput *output7 = [[AVCaptureStillImageOutput alloc] init];
         NSDictionary *outputSettings = [[NSDictionary alloc] initWithObjectsAndKeys: AVVideoCodecJPEG, AVVideoCodecKey, nil];
         [output7 setOutputSettings:outputSettings];
         self.output = output7;
         
         [session addOutput:self.output];
-#pragma clang diagnostic pop
-        
-    }else {
-        AVCapturePhotoOutput *output = [[AVCapturePhotoOutput alloc] init];
-        //    output.
-        self.output = output;
-        [session addOutput:output];
-        
     }
 }
 
 //iOS10
 -(void)captureOutput:(AVCapturePhotoOutput *)captureOutput didFinishProcessingPhotoSampleBuffer:(CMSampleBufferRef)photoSampleBuffer previewPhotoSampleBuffer:(CMSampleBufferRef)previewPhotoSampleBuffer resolvedSettings:(AVCaptureResolvedPhotoSettings *)resolvedSettings bracketSettings:(AVCaptureBracketedStillImageSettings *)bracketSettings error:(NSError *)error
-{
+API_AVAILABLE(ios(10.0)){
     if (photoSampleBuffer) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Weverything"
         NSData *data = [AVCapturePhotoOutput JPEGPhotoDataRepresentationForJPEGSampleBuffer:photoSampleBuffer previewPhotoSampleBuffer:previewPhotoSampleBuffer];
         UIImage *image = [UIImage imageWithData:data];
-#pragma clang diagnostic pop
-        
-        
+
         [self getImageSuccess:image];
     }
 }
@@ -354,10 +344,7 @@
 #pragma mark === Swap Camera ===
 - (AVCaptureDevice *)cameraWithPosition:(AVCaptureDevicePosition)position
 {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Weverything"
     NSArray *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
-#pragma clang diagnostic pop
     
     for ( AVCaptureDevice *device in devices )
         if ( device.position == position )

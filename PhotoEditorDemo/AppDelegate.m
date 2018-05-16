@@ -24,9 +24,10 @@
     [[PhotoPickerConfig defaultConfig] setBackgroundTintColor:[UIColor blueColor]];
     [[PhotoPickerConfig defaultConfig] setTextTintColor:[UIColor whiteColor]];
     
-    [[PhotoPickerConfig defaultConfig] setAlbumFilter:^NSMutableArray *{
-        return [NSMutableArray arrayWithArray:@[[PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeSmartAlbumUserLibrary options:nil]]];
-    }];
+//    [[PhotoPickerConfig defaultConfig] setAlbumFilter:^NSMutableArray *{
+//        return [NSMutableArray arrayWithArray:@[[PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeSmartAlbumUserLibrary options:nil]]];
+//    }];
+    
     [[PhotoPickerConfig defaultConfig] setMessageBlock:^(NSString *info, UIViewController *showView, alertContinueBlock block) {
         if (block) {
             UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"test" message:info preferredStyle:UIAlertControllerStyleAlert];

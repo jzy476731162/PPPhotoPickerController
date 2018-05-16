@@ -155,7 +155,6 @@
 				43B341F71FBC4089007F0742 /* Extension */,
 				43B341F31FBC4089007F0742 /* ThirdParty */,
 				43F5C32F1FB9B53300405DCF /* PhotoPicker.storyboard */,
-				43F5C3201FB9B51000405DCF /* PhotoPickerHeader.h */,
 				43F5C3241FB9B51000405DCF /* PhotoPicker.h */,
 				43F5C3281FB9B51000405DCF /* PhotoPicker.m */,
 				43F5C34D1FBAA5E600405DCF /* PhotoPickerConfig.h */,
@@ -166,6 +165,7 @@
 				43F5C3231FB9B51000405DCF /* PPCamera.m */,
 				43F5C3271FB9B51000405DCF /* PPAlbumCollectionCell.h */,
 				43F5C3211FB9B51000405DCF /* PPAlbumCollectionCell.m */,
+				43F5C3201FB9B51000405DCF /* PhotoPickerHeader.h */,
 				43F5C31D1FB9B50F00405DCF /* PPAlbumEntity.h */,
 				43F5C31E1FB9B50F00405DCF /* PPAlbumEntity.m */,
 			);
@@ -443,7 +443,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = PS7E2CN375;
 				INFOPLIST_FILE = PhotoEditorDemo/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.wooforbes.PhotoEditorDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -459,7 +459,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = PS7E2CN375;
 				INFOPLIST_FILE = PhotoEditorDemo/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.wooforbes.PhotoEditorDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";

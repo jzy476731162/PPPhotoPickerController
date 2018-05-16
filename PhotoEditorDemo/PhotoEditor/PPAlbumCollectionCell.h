@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 
 #import <Photos/Photos.h>
-@class PhotoEntity;
+@class PPPhotoEntity;
 
 
 @interface PPAlbumCollectionCell : UICollectionViewCell

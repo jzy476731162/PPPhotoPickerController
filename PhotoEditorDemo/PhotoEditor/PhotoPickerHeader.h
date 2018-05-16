@@ -9,9 +9,10 @@
 #ifndef PhotoPickerHeader_h
 #define PhotoPickerHeader_h
 
-
+@class PPAlbumFetchEntity;
+@class PPPhotoEntity;
 /**
- return the album you want to show, see PPAlbumEntity line:61s
+ return the album you want to fetch, see PPAlbumEntity line:61s
 
  @return [PHFetchResult]
  */
@@ -46,23 +47,24 @@ typedef void(^messageBlock)(NSString *info, UIViewController *showView, alertCon
 
 @end
 
-@protocol AlbumEntityDelegate <NSObject>
+@protocol PPAlbumFetchDelegate <NSObject>
 
-- (void)albumLoadImagesComplete:(NSString *)albumTitle;
+//Image Level
 - (void)fetchImageComplete:(BOOL)success Index:(NSIndexPath *)index isUserInterrupt:(BOOL)isUserInterrupted;
 - (void)startFetchImage:(NSIndexPath *)indexPath;
 - (void)cancelFetchImage:(NSIndexPath *)indexPath;
-- (void)selectImageComplete;
 
-- (void)reloadNumberCount:(NSIndexPath *)indexPath;
-- (void)reloadAll;
-
-
+//Album Level
+- (void)refetchAlbum;
+- (void)albumFetchEntity:(PPAlbumFetchEntity *)entity LoadingAlbumCompleted:(NSString *)albumTitle;
+- (void)albumFetchEntity:(PPAlbumFetchEntity *)entity SelectedPhotosChanged:(NSIndexPath *)indexPath;
+- (void)albumFetchEntity:(PPAlbumFetchEntity *)entity DeselectBadgeNumberChanged:(NSIndexPath *)indexPath;
 @end
 
-typedef NS_ENUM(NSUInteger, PhotoSource) {
-    PhotoSourceCamera = 1,
-    PhotoSourceAlbum,
+
+typedef NS_ENUM(NSUInteger, PPPickerSourceType) {
+    PPPickerSourceTypeCamera = 1,
+    PPPickerSourceTypeAlbum,
 };
 
 typedef NS_ENUM(NSUInteger, PhotoDestination) {
@@ -72,7 +74,7 @@ typedef NS_ENUM(NSUInteger, PhotoDestination) {
 };
 
 static NSString const *kAlbumAuthNotDetermindText = @"快开启照片权限吧~";
-static NSString const *kAlbumAuthDeniedText = @"您禁止了\"XX\"使用相册\n请前往系统设置->汪布斯->允许\"XX\"访问照片开启";
+static NSString const *kAlbumAuthDeniedText = @"您禁止了\"XX\"使用相册\n请前往系统设置->AppName->允许\"XX\"访问照片开启";
 static NSString const *kAlbumAuthRestrictText = @"您禁用了访问相册\n请前往系统设置->XX->允许\"XX\"访问照片开启";
 static NSString const *kAlbumAuthEmptyText = @"这个相册没有皂片哦~";
 

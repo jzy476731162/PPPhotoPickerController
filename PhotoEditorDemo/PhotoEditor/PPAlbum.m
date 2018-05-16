@@ -26,10 +26,11 @@
 
 
 #define kDefaultImageSizeWidth ((([UIScreen mainScreen].bounds.size.width - 2 - 1)/3) - 2)
-@interface Album () <UICollectionViewDelegate, UICollectionViewDataSource , UICollectionViewDelegateFlowLayout, CustomPopOverViewDelegate, AlbumEntityDelegate>
+@interface Album () <UICollectionViewDelegate, UICollectionViewDataSource , UICollectionViewDelegateFlowLayout, CustomPopOverViewDelegate, PPAlbumFetchDelegate>
 @property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
 
 @property (nonatomic, strong) PPAlbumEntity *albumEntity;
+@property (nonatomic, strong) PPAlbumFetchEntity *albumFetchEntity;
 
 @property (nonatomic, weak)IBOutlet UIButton *menuButton;
 
@@ -46,12 +47,23 @@
 }
 
 - (void)fetchImageComplete:(BOOL)success Index:(NSIndexPath *)index isUserInterrupt:(BOOL)isUserInterrupted{
-    PPAlbumCollectionCell * currentCell = (PPAlbumCollectionCell *)[self.collectionView cellForItemAtIndexPath:index];
-    if (success) {
-        [currentCell setFetchedSelectedCellState:nil];
-    }else {
-        [currentCell setUnselectedCellState];
+    NSArray *visibleIndexs = [_collectionView indexPathsForVisibleItems];
+    for (NSIndexPath *indexpath in visibleIndexs) {
+        if (index.row == indexpath.row && index.section == indexpath.section) {
+            PPAlbumCollectionCell * currentCell = (PPAlbumCollectionCell *)[self.collectionView cellForItemAtIndexPath:index];
+            if (success) {
+                [currentCell setFetchedSelectedCellState:nil];
+            }else {
+                [currentCell setUnselectedCellState];
+            }
+        }
     }
+//    PPAlbumCollectionCell * currentCell = (PPAlbumCollectionCell *)[self.collectionView cellForItemAtIndexPath:index];
+//    if (success) {
+//        [currentCell setFetchedSelectedCellState:nil];
+//    }else {
+//        [currentCell setUnselectedCellState];
+//    }
     
     if (!success && isUserInterrupted) {
         if ([PhotoPickerConfig defaultConfig].messageBlock) {
@@ -60,14 +72,14 @@
     }
     
     if (!success) {
-        [self.albumEntity destructPhotoEntityWithIndexPath:index];
+        [self.albumFetchEntity destructPhotoEntityWithIndexPath:index];
     }
 }
 
 - (void)startFetchImage:(NSIndexPath *)indexPath {
     PPAlbumCollectionCell * currentCell = (PPAlbumCollectionCell *)[self.collectionView cellForItemAtIndexPath:indexPath];
     
-    [currentCell setFetchingCellState:[self.albumEntity getEntityIndex:indexPath]];
+    [currentCell setFetchingCellState:[self.albumFetchEntity getEntityIndex:indexPath]];
 }
 
 - (void)cancelFetchImage:(NSIndexPath *)indexPath {
@@ -75,22 +87,29 @@
     [currentCell setUnselectedCellState];
 }
 
-- (void)selectImageComplete {
-    [self.nextButton setEnabled:self.albumEntity.photos.count];
+- (void)albumFetchEntity:(PPAlbumFetchEntity *)entity SelectedPhotosChanged:(NSIndexPath *)indexPath {
+    [self.nextButton setEnabled:self.albumFetchEntity.photos.count];
 }
 
-- (void)reloadNumberCount:(NSIndexPath *)indexPath {
+- (void)albumFetchEntity:(PPAlbumFetchEntity *)entity DeselectBadgeNumberChanged:(NSIndexPath *)indexPath {
     NSMutableArray *indexs = indexPath?[NSMutableArray arrayWithArray:@[indexPath]]:[NSMutableArray new];
-    for (NSNumber *index in self.albumEntity.numberHash.allKeys) {
+    for (NSNumber *index in self.albumFetchEntity.numberHash.allKeys) {
         [indexs addObject:[NSIndexPath indexPathForRow:[index integerValue] inSection:0]];
     }
+    
+     [self.nextButton setEnabled:self.albumFetchEntity.numberHash.count];
     
     [self.collectionView reloadItemsAtIndexPaths:indexs];
 }
 
-- (void)reloadAll {
+- (void)albumFetchEntity:(PPAlbumFetchEntity *)entity LoadingAlbumCompleted:(NSString *)albumTitle {
     [self.collectionView reloadData];
 }
+
+- (void)refetchAlbum {
+    [self.collectionView reloadData];
+}
+
 
 #pragma mark - Other
 - (void)appBecomeActive {
@@ -115,10 +134,10 @@
 }
 
 - (void)setupEntity {
-    self.albumEntity = [PPAlbumEntity initializeWithDelegate:self StartIndex:self.startIndex];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self.collectionView reloadData];
-    });
+
+    self.albumEntity = [PPAlbumEntity initializeWithStartIndex:self.startIndex];
+    
+    self.albumFetchEntity = [[PPAlbumFetchEntity alloc] initWithDelegate:self DataSource:self.albumEntity.albumsResult[0] StartIndex:self.startIndex];
 }
 
 
@@ -177,7 +196,7 @@
 }
 
 - (IBAction)nextStep:(UIButton *)sender {
-    NSArray *uncompletedImages = [self.albumEntity checkFetchUncompletedImage];
+    NSArray *uncompletedImages = [self.albumFetchEntity checkFetchUncompletedImage];
     if (uncompletedImages) {
         NSMutableString *str = [NSMutableString stringWithFormat:@"您选择的图"];
         for (NSNumber *index in uncompletedImages) {
@@ -203,9 +222,9 @@
 }
 
 - (void)submitPhotos {
-    if (self.albumEntity.photos.count > 1) {
+    if (self.albumFetchEntity.photos.count > 1) {
         NSMutableArray *array = [NSMutableArray new];
-        for (PhotoEntity *photo in self.albumEntity.photos) {
+        for (PPPhotoEntity *photo in self.albumFetchEntity.photos) {
             if ([photo validImage]) {
                 [array addObject:photo.selectedImage];
             }
@@ -213,9 +232,9 @@
         if ([self.delegate respondsToSelector:@selector(userPickedPhotos:)]) {
             [self.delegate userPickedPhotos:array];
         }
-    }else if (self.albumEntity.photos.count == 1) {
+    }else if (self.albumFetchEntity.photos.count == 1) {
         if ([self.delegate respondsToSelector:@selector(userPickedPhoto:)]) {
-            [self.delegate userPickedPhoto:[self.albumEntity.photos[0] selectedImage]];
+            [self.delegate userPickedPhoto:[self.albumFetchEntity.photos[0] selectedImage]];
         }
     }else {
         return;
@@ -223,9 +242,7 @@
 }
 
 - (void)popOverView:(CustomPopOverView *)pView didClickMenuIndex:(NSInteger)index {
-    self.albumEntity.currentAlbumIndex = index;
-
-    [self.albumEntity reloadAlbum:index];
+    [self.albumFetchEntity reloadWithDataSource:self.albumEntity.albumsResult[index]];
 
     [pView dismiss];
     
@@ -238,15 +255,15 @@
 }
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    return self.albumEntity.result.count;
+    return self.albumFetchEntity.result.count;
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     PPAlbumCollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"PPAlbumCollectionCell" forIndexPath:indexPath];
-    [cell configWithPHAsset:self.albumEntity.result[[indexPath row]]];
+    [cell configWithPHAsset:self.albumFetchEntity.result[[indexPath row]]];
     
-    if (self.albumEntity.numberHash[@(indexPath.row)]) {
-        for (PhotoEntity * entity in self.albumEntity.photos) {
+    if (self.albumFetchEntity.numberHash[@(indexPath.row)]) {
+        for (PPPhotoEntity * entity in self.albumFetchEntity.photos) {
             if (entity.currentSelectedIndexpath.row == indexPath.row & entity.currentSelectedIndexpath.section == indexPath.section) {
                 BOOL selected = false;
                 if (entity.selectedImage) {
@@ -256,7 +273,7 @@
                         selected = true;
                     }
                 }
-                [cell selectCell:selected showLoading:entity.isLoading Index:self.albumEntity.numberHash[@(indexPath.row)] ];
+                [cell selectCell:selected showLoading:entity.isLoading Index:self.albumFetchEntity.numberHash[@(indexPath.row)] ];
                 break;
             }
         }
@@ -269,15 +286,15 @@
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
     if (self.maxSelectCount == 1) {
-        if (self.albumEntity.photos.count == 1) {
-            [self.albumEntity destructPhotoEntityWithIndexPath:[self.albumEntity.photos[0] currentSelectedIndexpath]];
+        if (self.albumFetchEntity.photos.count == 1) {
+            [self.albumFetchEntity destructPhotoEntityWithIndexPath:[self.albumFetchEntity.photos[0] currentSelectedIndexpath]];
         }
         
-    }else if (![self.albumEntity checkExistEntity:indexPath] && self.albumEntity.photos.count >= self.maxSelectCount) {
+    }else if (![self.albumFetchEntity entityIsExisted:indexPath] && self.albumFetchEntity.photos.count >= self.maxSelectCount) {
         return;
     }
     
-    [self.albumEntity userTapCell:indexPath];
+    [self.albumFetchEntity tapIndex:indexPath];
 }
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {

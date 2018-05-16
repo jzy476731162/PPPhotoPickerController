@@ -27,16 +27,19 @@
 }
 
 - (void)presentPicker {
-    [PhotoPicker presentPickerFromViewController:self PhotoSource:PhotoSourceAlbum StartIndex:3 MaxCount:5 Completion:^(NSMutableArray<UIImage *> *items, UINavigationController *controller) {
-//        if (controller) {
-//            [controller dismissViewControllerAnimated:YES completion:nil];
-//        }
-        UIViewController *test = [UIViewController new];
-        [test.view setBackgroundColor:[UIColor whiteColor]];
-        if (controller) {
-            [controller pushViewController:test animated:YES];
-        }
+    [PhotoPicker presentPickerFromViewController:self PhotoSource:PPPickerSourceTypeAlbum StartIndex:3 MaxCount:5 Completion:^(NSMutableArray<UIImage *> *items, UINavigationController *navigation) {
+        
     }];
+//    [PhotoPicker presentPickerFromViewController:self PhotoSource:PhotoSourceAlbum StartIndex:3 MaxCount:5 Completion:^(NSMutableArray<UIImage *> *items, UINavigationController *controller) {
+////        if (controller) {
+////            [controller dismissViewControllerAnimated:YES completion:nil];
+////        }
+//        UIViewController *test = [UIViewController new];
+//        [test.view setBackgroundColor:[UIColor whiteColor]];
+//        if (controller) {
+//            [controller pushViewController:test animated:YES];
+//        }
+//    }];
 }
 
 

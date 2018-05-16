@@ -15,13 +15,13 @@ typedef void(^pickMultiPhotoCompletion)(NSMutableArray<UIImage *> *items, UINavi
 
 @interface PhotoPicker : UIViewController
 
-@property (nonatomic, assign) PhotoSource sourceType;
+@property (nonatomic, assign) PPPickerSourceType sourceType;
 
 @property (nonatomic, assign) NSInteger startIndex;
 @property (nonatomic, assign) NSInteger maxSelectCount;
 
 @property (nonatomic, copy) pickMultiPhotoCompletion multiCompletion;
 
-+ (void)presentPickerFromViewController:(UIViewController *)vc PhotoSource:(PhotoSource)sourceType StartIndex:(NSInteger)startIndex MaxCount:(NSInteger)maxCount Completion:(pickMultiPhotoCompletion)completion;
++ (void)presentPickerFromViewController:(UIViewController *)vc PhotoSource:(PPPickerSourceType)sourceType StartIndex:(NSInteger)startIndex MaxCount:(NSInteger)maxCount Completion:(pickMultiPhotoCompletion)completion;
 
 @end
