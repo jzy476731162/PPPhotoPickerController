@@ -58,12 +58,6 @@
             }
         }
     }
-//    PPAlbumCollectionCell * currentCell = (PPAlbumCollectionCell *)[self.collectionView cellForItemAtIndexPath:index];
-//    if (success) {
-//        [currentCell setFetchedSelectedCellState:nil];
-//    }else {
-//        [currentCell setUnselectedCellState];
-//    }
     
     if (!success && isUserInterrupted) {
         if ([PhotoPickerConfig defaultConfig].messageBlock) {

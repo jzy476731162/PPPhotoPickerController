@@ -101,10 +101,26 @@
     }else {
         [self selectCell:YES showLoading:NO];
     }
+    [self selectedAnimation];
+    //animation
 }
 
 - (void)setUnselectedCellState {
     [self selectCell:NO showLoading:NO];
+}
+
+- (void)selectedAnimation {
+    [UIView animateWithDuration:0.25 animations:^{
+        [[self checkmarkView] setTransform:CGAffineTransformScale(CGAffineTransformIdentity, 1.2, 1.2)];
+    } completion:^(BOOL finished) {
+        [UIView animateWithDuration:0.25 animations:^{
+            [[self checkmarkView] setTransform:CGAffineTransformScale(CGAffineTransformIdentity, 1.0, 1.0)];
+        } completion:^(BOOL finished) {
+            [UIView animateWithDuration:0.25 animations:^{
+                [[self checkmarkView] setTransform:CGAffineTransformIdentity];
+            }];
+        }];
+    }];
 }
 
 
